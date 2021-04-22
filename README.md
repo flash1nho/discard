@@ -13,7 +13,7 @@ A simple ActiveRecord mixin to add conventions for flagging records as discarded
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'discard', '~> 1.0'
+gem 'discard', '~> 1.2'
 ```
 
 And then execute:
@@ -57,7 +57,10 @@ Post.discarded       # => []
 
 post = Post.first   # => #<Post id: 1, ...>
 post.discard        # => true
+post.discard!       # => Discard::RecordNotDiscarded: Failed to discard the record
 post.discarded?     # => true
+post.undiscarded?   # => false
+post.kept?          # => false
 post.discarded_at   # => 2017-04-18 18:49:49 -0700
 
 Post.all             # => [#<Post id: 1, ...>]
@@ -82,6 +85,8 @@ end
 ```ruby
 post = Post.first   # => #<Post id: 1, ...>
 post.undiscard      # => true
+post.undiscard!     # => Discard::RecordNotUndiscarded: Failed to undiscard the record
+post.discarded_at   # => nil
 ```
 
 ***From a controller***
@@ -123,6 +128,10 @@ class Comment < ActiveRecord::Base
 
   include Discard::Model
   scope :kept, -> { undiscarded.joins(:post).merge(Post.kept) }
+
+  def kept?
+    undiscarded? && post.kept?
+  end
 end
 
 Comment.kept
@@ -220,6 +229,12 @@ end
 * Recursive discards (like AR's dependent: destroy) - This can be avoided using queries (See "Working with associations") or emulated using callbacks.
 * Recursive restores - This concept is fundamentally broken, but not necessary if the recursive discards are avoided.
 
+## Extensions
+
+Discard provides the smallest subset of soft-deletion features that we think are useful to all users of the gem. We welcome the addition of gems that work with Discard to provide additional features.
+
+- [discard-rails-observers](https://github.com/pelargir/discard-rails-observers) integrates discard with the [rails-observers gem](https://github.com/rails/rails-observers)
+
 ## Why not paranoia or acts_as_paranoid?
 
 I've worked with and have helped maintain
@@ -256,7 +271,11 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/jhawthorn/discard.
+Please consider filing an issue with the details of any features you'd like to see before implementing them. Discard is feature-complete and we are only interested in adding additional features that won't require substantial maintenance burden and that will benefit all users of the gem. We encourage anyone that needs additional or different behaviour to either create their own gem that builds off of discard or implement a new package with the different behaviour.
+
+Discard is very simple and we like it that way. Creating your own clone or fork with slightly different behaviour may not be that much work!
+
+If you find a bug in discard, please report it! We try to keep up with any issues and keep the gem running smoothly for everyone! You can report issues [here](https://github.com/jhawthorn/discard/issues).
 
 ## License
 
