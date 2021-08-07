@@ -135,7 +135,7 @@ module Discard
     def discard
       return false if discarded?
       run_callbacks(:discard) do
-        update_attributes("#{self.class.discard_column}": Time.current, "#{self.class.archive_column}": nil)
+        update("#{self.class.discard_column}": Time.current, "#{self.class.archive_column}": nil)
       end
     end
 
@@ -145,7 +145,7 @@ module Discard
     def archive
       return if archived?
       run_callbacks(:archive) do
-        update_attributes("#{self.class.discard_column}": nil, "#{self.class.archive_column}": Time.current)
+        update("#{self.class.discard_column}": nil, "#{self.class.archive_column}": Time.current)
       end
     end
 
