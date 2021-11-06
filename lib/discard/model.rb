@@ -90,8 +90,12 @@ module Discard
     # @return [Boolean] true if successful, otherwise false
     def discard
       return if discarded?
+
       run_callbacks(:discard) do
-        update_attributes("#{self.class.discard_column}": Time.current, "#{self.class.archive_column}": nil)
+        self[self.class.discard_column] = Time.current
+        self[self.class.archive_column] = nil
+
+        save(validate: false)
       end
     end
 
@@ -100,8 +104,12 @@ module Discard
     # @return [Boolean] true if successful, otherwise false
     def archive
       return if archived?
+
       run_callbacks(:archive) do
-        update_attributes("#{self.class.discard_column}": nil, "#{self.class.archive_column}": Time.current)
+        self[self.class.discard_column] = nil
+        self[self.class.archive_column] = Time.current
+
+        save(validate: false)
       end
     end
 
